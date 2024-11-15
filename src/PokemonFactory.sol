@@ -77,7 +77,7 @@ contract PokemonFactory {
         uint16 _base_speed,
         uint16 _base_height,
         uint16 _base_weight
-    ) public {
+    ) public onlyOwner{
 
         require(ownerPokemonCount[msg.sender] < 6); // A trainer cannot carry more than 6 pokemons
 
