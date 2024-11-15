@@ -1,10 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-contract PokemonFactory {
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+
+contract PokemonFactory is Ownable {
 
     event NewPokemon(uint256 id, string nickname, uint32 personalityValue);
 
+    constructor() Ownable(msg.sender) {}
     /**
      * Since data is saved in a struct, it is convenient to group the data of the same type together.
      * This way, the blockchain may store the data more efficiently. Less storage slots may be used.
@@ -77,7 +80,7 @@ contract PokemonFactory {
         uint16 _base_speed,
         uint16 _base_height,
         uint16 _base_weight
-    ) public onlyOwner{
+    ) public onlyOwner {
 
         require(ownerPokemonCount[msg.sender] < 6); // A trainer cannot carry more than 6 pokemons
 
