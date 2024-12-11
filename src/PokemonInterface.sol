@@ -35,20 +35,47 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
 
     function tokenURI(uint256 _pokemonId) external view override returns (string memory) {
 
-        return string (
-            abi.encodePacked(
-                _baseURI(),
-                Base64.encode(
-                    bytes(
-                        abi.encodePacked(
-                            '{"name": "', s_pokemons[_pokemonId].nickname,
-                            '", "image": "', _pngToImageURI(s_pokemons[_pokemonId].img_sprite_png),
-                            '"}'
-                        )
-                    )
+        Pokemon memory pokemon = s_pokemons[_pokemonId];
+        string memory isShiny = pokemon.is_shiny ? "true" : "false";
+
+        string memory json = Base64.encode(
+            bytes(
+                abi.encodePacked(
+                    '{"name": "', pokemon.nickname,
+                    '", "pokedex_id": ', Strings.toString(pokemon.pokedex_id),
+                    ', "ability_1": "', pokemon.ability1_name,
+                    '", "ability_2": "', pokemon.ability2_name,
+                    '", "hp": ', Strings.toString(pokemon.hp),
+                    ', "attack": ', Strings.toString(pokemon.attack),
+                    ', "defense": ', Strings.toString(pokemon.defense),
+                    ', "attack_sp": ', Strings.toString(pokemon.attack_sp),
+                    ', "defense_sp": ', Strings.toString(pokemon.defense_sp),
+                    ', "speed": ', Strings.toString(pokemon.speed),
+                    ', "height": ', Strings.toString(pokemon.height),
+                    ', "weight": ', Strings.toString(pokemon.weight),
+                    ', "level": ', Strings.toString(pokemon.level),
+                    ', "nature_index": ', Strings.toString(pokemon.nature_index),
+                    ', "exp": ', Strings.toString(pokemon.exp),
+                    ', "iv_hp": ', Strings.toString(pokemon.iv_hp),
+                    ', "iv_attack": ', Strings.toString(pokemon.iv_attack),
+                    ', "iv_defense": ', Strings.toString(pokemon.iv_defense),
+                    ', "iv_attack_sp": ', Strings.toString(pokemon.iv_attack_sp),
+                    ', "iv_defense_sp": ', Strings.toString(pokemon.iv_defense_sp),
+                    ', "iv_speed": ', Strings.toString(pokemon.iv_speed),
+                    ', "ev_hp": ', Strings.toString(pokemon.ev_hp),
+                    ', "ev_attack": ', Strings.toString(pokemon.ev_attack),
+                    ', "ev_defense": ', Strings.toString(pokemon.ev_defense),
+                    ', "ev_attack_sp": ', Strings.toString(pokemon.ev_attack_sp),
+                    ', "ev_defense_sp": ', Strings.toString(pokemon.ev_defense_sp),
+                    ', "ev_speed": ', Strings.toString(pokemon.ev_speed),
+                    ', "is_shiny": ', isShiny,
+                    ', "image": "', _pngToImageURI(pokemon.img_sprite_png),
+                    '"}'
                 )
             )
         );
+
+        return string (abi.encodePacked(_baseURI(), json));
     }
 
     function mintPokemon(
