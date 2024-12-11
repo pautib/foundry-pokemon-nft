@@ -5,17 +5,24 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PokemonFactory is Ownable {
 
-    event NewPokemon(uint256 id, string nickname, uint32 personalityValue);
+    event NewPokemon(uint256 indexed _id, string _nickname, uint32 _personalityValue);
+    
+    mapping (uint256 => address) internal s_pokemonToOwner;
+    mapping (address => uint256) internal s_ownerPokemonCount; // May not be more than 6
+    uint256 internal s_pokemonCounter;
+    Pokemon[] internal s_pokemons;
 
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(_msgSender()) {
+        s_pokemonCounter = 0;
+    }
     /**
      * Since data is saved in a struct, it is convenient to group the data of the same type together.
      * This way, the blockchain may store the data more efficiently. Less storage slots may be used.
      */
     struct Pokemon {
-
+        uint256 id; // the token id    
         string nickname;
-        string img_sprite_name;
+        string img_sprite_png; // encoded in base64
         string ability1_name;
         string ability2_name;
         
@@ -61,17 +68,12 @@ contract PokemonFactory is Ownable {
         address held_item;
     }
 
-    Pokemon[] public pokemons;
-
-    mapping (uint256 => address) public pokemonToOwner;
-    mapping (address => uint256) ownerPokemonCount; // May not be more than 6
-
     function createRandomPokemon(
         uint16 _pokedex_id,
         string memory _nickname,
-        string memory img_sprite_name,
-        string memory ability1_name,
-        string memory ability2_name,
+        string memory _img_encoded_sprite,
+        string memory _ability1_name,
+        string memory _ability2_name,
         uint16 _base_hp,
         uint16 _base_attack,
         uint16 _base_defense,
@@ -80,9 +82,9 @@ contract PokemonFactory is Ownable {
         uint16 _base_speed,
         uint16 _base_height,
         uint16 _base_weight
-    ) public onlyOwner {
+    ) public returns (uint256) {
 
-        require(ownerPokemonCount[msg.sender] < 6); // A trainer cannot carry more than 6 pokemons
+        require(s_ownerPokemonCount[_msgSender()] < 6); // A trainer cannot carry more than 6 pokemons
 
          uint32 personality_value = _getRandomPersonalityValue(); // Value from 0 to 4_294_967_295
 
@@ -110,7 +112,7 @@ contract PokemonFactory is Ownable {
         // Calculate the ability
         bool hasSecondAbility = _hasSecondAbility(personality_value);
         if (!hasSecondAbility) {
-            ability2_name = "";
+            _ability2_name = "";
         }
 
         // Initializing empty values
@@ -121,10 +123,11 @@ contract PokemonFactory is Ownable {
         address held_item = address(0);
 
         Pokemon memory newPokemon = Pokemon(
+            s_pokemonCounter++, // provide token id and then increase the counter
             _nickname,
-            img_sprite_name,
-            ability1_name,
-            ability2_name,
+            _img_encoded_sprite,
+            _ability1_name,
+            _ability2_name,
             _pokedex_id,
             _base_hp,
             _base_attack,
@@ -157,34 +160,43 @@ contract PokemonFactory is Ownable {
         );
 
         _createPokemon(newPokemon);
+
+        return newPokemon.id;
     }
 
-    function _createPokemon(Pokemon memory pokemon) private {
-        pokemons.push(pokemon);
-        pokemonToOwner[pokemons.length - 1] = msg.sender;
-        ownerPokemonCount[msg.sender]++;
-        emit NewPokemon(pokemons.length - 1, pokemon.nickname, pokemon.personality_value); // array_id = pokemons.length - 1
+    function releasePokemon(uint256 _pokemonId) public {
+        require(s_pokemonToOwner[_pokemonId] == _msgSender());
+        s_ownerPokemonCount[_msgSender()]--;
+        delete s_pokemonToOwner[_pokemonId];
+        delete s_pokemons[_pokemonId];
+    }
+
+    function _createPokemon(Pokemon memory _pokemon) private {
+        s_pokemons.push(_pokemon);
+        s_pokemonToOwner[_pokemon.id] = _msgSender();
+        s_ownerPokemonCount[_msgSender()]++;
+        emit NewPokemon(_pokemon.id, _pokemon.nickname, _pokemon.personality_value); // array_id = pokemons.length - 1
     }
 
     function _getRandomPersonalityValue() private view returns (uint32) {
         // Maybe we can user a VRF Coordinator in the future to get
         // the Linear Congruential random number like bulbapedia says
-        uint256 personalityValueNotModuled = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, pokemons.length)));
+        uint256 personalityValueNotModuled = uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, s_pokemons.length)));
         return uint32(personalityValueNotModuled);
     }
 
     function _getRandomEncryptionConstant() private view returns (uint32) {
-        uint256 encryptionCtNotModuled = uint256(sha256(abi.encodePacked(block.prevrandao, block.timestamp, pokemons.length)));
+        uint256 encryptionCtNotModuled = uint256(sha256(abi.encodePacked(block.prevrandao, block.timestamp, s_pokemons.length)));
         return uint32(encryptionCtNotModuled);
     }
 
-    function _getRandomIVValue(string memory iv_type) private view returns (uint8) {
-        uint256 ivNotModuled = uint256(keccak256(abi.encodePacked(iv_type, block.prevrandao, block.timestamp, pokemons.length)));
+    function _getRandomIVValue(string memory _iv_type) private view returns (uint8) {
+        uint256 ivNotModuled = uint256(keccak256(abi.encodePacked(_iv_type, block.prevrandao, block.timestamp, s_pokemons.length)));
         return uint8(ivNotModuled % 32);
     }
 
-    function _getRandomEVValue(string memory ev_type) private view returns (uint8) {
-        uint256 evNotModuled = uint256(keccak256(abi.encodePacked(ev_type, block.prevrandao, block.timestamp, pokemons.length)));
+    function _getRandomEVValue(string memory _ev_type) private view returns (uint8) {
+        uint256 evNotModuled = uint256(keccak256(abi.encodePacked(_ev_type, block.prevrandao, block.timestamp, s_pokemons.length)));
         return uint8(evNotModuled % 256);
     }
 

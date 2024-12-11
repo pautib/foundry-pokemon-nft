@@ -8,6 +8,7 @@ import { IERC721Errors } from "@openzeppelin/contracts/interfaces/draft-IERC6093
 import { Context } from "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Utils.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import { Base64 } from "@openzeppelin/contracts/utils/Base64.sol";
 import { PokemonHelper } from "./PokemonHelper.sol";
 
 contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, PokemonHelper {
@@ -16,7 +17,7 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
     string private constant TOKEN_NAME = "PokesPautib";
 
     /**
-     * @dev We won't allow to allow sending Pokemons from another trainer.
+     * @dev We won't allow sending Pokemons from another trainer.
      * The owner of the Pokemon is the only one allowed to transfer it.
      * @param operator Address that may be allowed to operate on tokens without being their owner.
      * @param tokenId Identifier number of a token.
@@ -24,25 +25,78 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
     error PokemonApprovalNotAllowed(address operator, uint256 tokenId);
 
     // Metadata
-    function name() external pure returns (string memory) {
+    function name() public pure returns (string memory) {
         return TOKEN_NAME;
     }
 
-    function symbol() external pure returns (string memory) {
+    function symbol() public pure returns (string memory) {
         return TOKEN_SYMBOL;
     }
 
-    function tokenURI(uint256 _tokenId) external pure override returns (string memory) {
-        return string(abi.encodePacked("https://pokeapi.co/api/v2/pokemon/", Strings.toString(_tokenId)));
+    function tokenURI(uint256 _pokemonId) external view override returns (string memory) {
+
+        return string (
+            abi.encodePacked(
+                _baseURI(),
+                Base64.encode(
+                    bytes(
+                        abi.encodePacked(
+                            '{"name": "', s_pokemons[_pokemonId].nickname,
+                            '", "image": "', _pngToImageURI(s_pokemons[_pokemonId].img_sprite_png),
+                            '"}'
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    function mintPokemon(
+        uint16 _pokedex_id,
+        string memory _nickname,
+        string memory _img_encoded_sprite,
+        string memory _ability1_name,
+        string memory _ability2_name,
+        uint16 _base_hp,
+        uint16 _base_attack,
+        uint16 _base_defense,
+        uint16 _base_attack_sp,
+        uint16 _base_defense_sp,
+        uint16 _base_speed,
+        uint16 _base_height,
+        uint16 _base_weight) external {
+
+        uint256 pokemonId = createRandomPokemon(
+            _pokedex_id,
+            _nickname,
+            _img_encoded_sprite,
+            _ability1_name,
+            _ability2_name,
+            _base_hp,
+            _base_attack,
+            _base_defense,
+            _base_attack_sp,
+            _base_defense_sp,
+            _base_speed,
+            _base_height,
+            _base_weight
+        );
+
+        emit Transfer(address(0), _msgSender(), pokemonId);
+    }
+
+    function burnPokemon(uint256 _pokemonId) public {
+        releasePokemon(_pokemonId);
+        emit Transfer(_msgSender(), address(0), _pokemonId);
     }
 
     // ERC721
     function balanceOf(address _owner) external view returns (uint256) {
-        return ownerPokemonCount[_owner];
+        return s_ownerPokemonCount[_owner];
     }
 
     function ownerOf(uint256 _tokenId) external view returns (address) {
-        return pokemonToOwner[_tokenId];
+        return s_pokemonToOwner[_tokenId];
     }
 
     function approve(address /*_to*/, uint256 _tokenId) external view {
@@ -61,11 +115,11 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
         return _operator == _owner;
     }
 
-    function supportsInterface(bytes4 interfaceId) external pure returns (bool) {
+    function supportsInterface(bytes4 _interfaceId) external pure returns (bool) {
         return
-            interfaceId == type(IERC721).interfaceId ||
-            interfaceId == type(IERC721Metadata).interfaceId ||
-            interfaceId == type(IERC721Errors).interfaceId; 
+            _interfaceId == type(IERC721).interfaceId ||
+            _interfaceId == type(IERC721Metadata).interfaceId ||
+            _interfaceId == type(IERC721Errors).interfaceId; 
     }
 
     function safeTransferFrom(address _from, address _to, uint256 _tokenId) external {
@@ -91,27 +145,34 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
             revert ERC721InvalidOwner(_from);
         }
 
-        ownerPokemonCount[_to]++;
-        ownerPokemonCount[_from]--;
-        pokemonToOwner[_tokenId] = _to;
+        s_ownerPokemonCount[_to]++;
+        s_ownerPokemonCount[_from]--;
+        s_pokemonToOwner[_tokenId] = _to;
 
         emit Transfer(_from, _to, _tokenId);
     }
 
-    function _ownerOf(uint256 tokenId) internal view returns (address) {
-        return pokemonToOwner[tokenId];
+    function _ownerOf(uint256 _tokenId) internal view returns (address) {
+        return s_pokemonToOwner[_tokenId];
     }
 
     /**
      * @dev Reverts if the `tokenId` doesn't have a current owner (it hasn't been minted, or it has been burned).
      * Returns the owner.
      */
-    function _requireOwned(uint256 tokenId) internal view returns (address) {
-        address owner = _ownerOf(tokenId);
+    function _requireOwned(uint256 _tokenId) internal view returns (address) {
+        address owner = _ownerOf(_tokenId);
         if (owner == address(0)) {
-            revert ERC721NonexistentToken(tokenId);
+            revert ERC721NonexistentToken(_tokenId);
         }
         return owner;
     }
 
+    function _baseURI() internal pure returns (string memory) {
+        return "data:application/json;base64,";
+    }
+
+    function _pngToImageURI(string memory _png) internal pure returns (string memory) { // _png already encoded in base64
+        return string(abi.encodePacked("data:image/png;base64,", _png));
+    }
 }
