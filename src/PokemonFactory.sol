@@ -12,6 +12,9 @@ contract PokemonFactory is Ownable {
     uint256 internal s_pokemonCounter;
     Pokemon[] internal s_pokemons;
 
+    error PokemonLimitExceeded(address trainerAddress);
+    error PokemonOnlyOwnerAllowed(address trainerAddress, uint256 pokemonId);
+
     constructor() Ownable(_msgSender()) {
         s_pokemonCounter = 0;
     }
@@ -68,6 +71,13 @@ contract PokemonFactory is Ownable {
         address held_item;
     }
 
+    modifier isPokemonTrainer(uint256 _pokemonId) {
+        if (s_pokemonToOwner[_pokemonId] != _msgSender()) {
+            revert PokemonOnlyOwnerAllowed(s_pokemonToOwner[_pokemonId], _pokemonId);
+        }
+        _;
+    }
+
     function createRandomPokemon(
         uint16 _pokedex_id,
         string memory _nickname,
@@ -84,10 +94,11 @@ contract PokemonFactory is Ownable {
         uint16 _base_weight
     ) public returns (uint256) {
 
-        require(s_ownerPokemonCount[_msgSender()] < 6); // A trainer cannot carry more than 6 pokemons
+        if (s_ownerPokemonCount[_msgSender()] >= 6) { // A trainer cannot carry more than 6 pokemons
+            revert PokemonLimitExceeded(_msgSender());
+        }
 
-         uint32 personality_value = _getRandomPersonalityValue(); // Value from 0 to 4_294_967_295
-
+        uint32 personality_value = _getRandomPersonalityValue(); // Value from 0 to 4_294_967_295
         uint32 encryption_constant = _getRandomEncryptionConstant();
 
         // Calculate the IVs
@@ -164,8 +175,7 @@ contract PokemonFactory is Ownable {
         return newPokemon.id;
     }
 
-    function releasePokemon(uint256 _pokemonId) public {
-        require(s_pokemonToOwner[_pokemonId] == _msgSender());
+    function releasePokemon(uint256 _pokemonId) public isPokemonTrainer(_pokemonId) {
         s_ownerPokemonCount[_msgSender()]--;
         delete s_pokemonToOwner[_pokemonId];
         delete s_pokemons[_pokemonId];
