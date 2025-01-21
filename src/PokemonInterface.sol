@@ -69,7 +69,7 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
                     ', "ev_defense_sp": ', Strings.toString(pokemon.ev_defense_sp),
                     ', "ev_speed": ', Strings.toString(pokemon.ev_speed),
                     ', "is_shiny": ', isShiny,
-                    ', "image": "', _pngToImageURI(pokemon.img_sprite_png),
+                    ', "image": "', pokemon.img_encoded_sprite,
                     '"}'
                 )
             )
@@ -199,7 +199,13 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
         return "data:application/json;base64,";
     }
 
-    function _pngToImageURI(string memory _png) internal pure returns (string memory) { // _png already encoded in base64
-        return string(abi.encodePacked("data:image/png;base64,", _png));
+    function _encodePNGImageURI(string memory _png_encoded) internal pure returns (string memory) { // _png already encoded in base64
+        return string(abi.encodePacked("data:image/png;base64,", _png_encoded));
     }
+
+    function _encodeGIFImageURI(string memory _gif_encoded) internal pure returns (string memory) { // _gif already encoded in base64
+        return string(abi.encodePacked("data:image/gif;base64,", _gif_encoded));
+    }
+
+
 }

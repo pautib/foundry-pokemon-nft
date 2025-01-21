@@ -25,7 +25,7 @@ contract PokemonFactory is Ownable {
     struct Pokemon {
         uint256 id; // the token id    
         string nickname;
-        string img_sprite_png; // encoded in base64
+        string img_encoded_sprite; // encoded in base64
         string ability1_name;
         string ability2_name;
         
