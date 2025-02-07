@@ -45,12 +45,12 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
                     '", "pokedex_id": ', Strings.toString(pokemon.pokedex_id),
                     ', "ability_1": "', pokemon.ability1_name,
                     '", "ability_2": "', pokemon.ability2_name,
-                    '", "hp": ', Strings.toString(pokemon.hp),
-                    ', "attack": ', Strings.toString(pokemon.attack),
-                    ', "defense": ', Strings.toString(pokemon.defense),
-                    ', "attack_sp": ', Strings.toString(pokemon.attack_sp),
-                    ', "defense_sp": ', Strings.toString(pokemon.defense_sp),
-                    ', "speed": ', Strings.toString(pokemon.speed),
+                    '", "base_hp": ', Strings.toString(pokemon.base_hp),
+                    ', "base_attack": ', Strings.toString(pokemon.base_attack),
+                    ', "base_defense": ', Strings.toString(pokemon.base_defense),
+                    ', "base_attack_sp": ', Strings.toString(pokemon.base_attack_sp),
+                    ', "base_defense_sp": ', Strings.toString(pokemon.base_defense_sp),
+                    ', "base_speed": ', Strings.toString(pokemon.base_speed),
                     ', "height": ', Strings.toString(pokemon.height),
                     ', "weight": ', Strings.toString(pokemon.weight),
                     ', "level": ', Strings.toString(pokemon.level),
@@ -69,7 +69,7 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
                     ', "ev_defense_sp": ', Strings.toString(pokemon.ev_defense_sp),
                     ', "ev_speed": ', Strings.toString(pokemon.ev_speed),
                     ', "is_shiny": ', isShiny,
-                    ', "image": "', pokemon.img_encoded_sprite,
+                    ', "image": "', pokemon.img_sprite_url,
                     '"}'
                 )
             )
@@ -81,7 +81,7 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
     function mintPokemon(
         uint16 _pokedex_id,
         string memory _nickname,
-        string memory _img_encoded_sprite,
+        string memory _img_sprite_url,
         string memory _ability1_name,
         string memory _ability2_name,
         uint16 _base_hp,
@@ -96,7 +96,7 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
         uint256 pokemonId = createRandomPokemon(
             _pokedex_id,
             _nickname,
-            _img_encoded_sprite,
+            _img_sprite_url,
             _ability1_name,
             _ability2_name,
             _base_hp,
@@ -195,17 +195,6 @@ contract PokemonInterface is Context, IERC721, IERC721Metadata, IERC721Errors, P
         return owner;
     }
 
-    function _baseURI() internal pure returns (string memory) {
-        return "data:application/json;base64,";
-    }
-
-    function _encodePNGImageURI(string memory _png_encoded) internal pure returns (string memory) { // _png already encoded in base64
-        return string(abi.encodePacked("data:image/png;base64,", _png_encoded));
-    }
-
-    function _encodeGIFImageURI(string memory _gif_encoded) internal pure returns (string memory) { // _gif already encoded in base64
-        return string(abi.encodePacked("data:image/gif;base64,", _gif_encoded));
-    }
 
 
 }

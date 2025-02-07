@@ -9,6 +9,7 @@ contract PokemonFactory is Ownable {
     
     mapping (uint256 => address) internal s_pokemonToOwner;
     mapping (address => uint256) internal s_ownerPokemonCount; // May not be more than 6
+    mapping (uint8 => uint8[5]) internal s_nature_multipliers;
     uint256 internal s_pokemonCounter;
     Pokemon[] internal s_pokemons;
 
@@ -17,6 +18,32 @@ contract PokemonFactory is Ownable {
 
     constructor() Ownable(_msgSender()) {
         s_pokemonCounter = 0;
+
+        s_nature_multipliers[1] = [10,10,10,10,10]; // 9 for 0.9 (decreased stat), 10 for (not increased nor decreased stat), 11 for (increased stat)
+        s_nature_multipliers[2] = [9,11,10,10,10];
+        s_nature_multipliers[3] = [9,10,11,10,10];
+        s_nature_multipliers[4] = [9,10,10,11,10];
+        s_nature_multipliers[5] = [9,10,10,10,11];
+        s_nature_multipliers[6] = [11,9,10,10,10];
+        s_nature_multipliers[7] = [10,10,10,10,10];
+        s_nature_multipliers[8] = [10,9,11,10,10];
+        s_nature_multipliers[9] = [10,9,10,11,10];
+        s_nature_multipliers[10] = [10,9,10,10,11];
+        s_nature_multipliers[11] = [11,10,9,10,10];
+        s_nature_multipliers[12] = [10,11,9,10,10];
+        s_nature_multipliers[13] = [10,10,10,10,10];
+        s_nature_multipliers[14] = [10,10,9,11,10];
+        s_nature_multipliers[15] = [10,10,11,9,10];
+        s_nature_multipliers[16] = [10,10,9,10,11];
+        s_nature_multipliers[17] = [11,10,10,9,10];
+        s_nature_multipliers[18] = [10,11,10,9,10];
+        s_nature_multipliers[19] = [10,10,10,10,10];
+        s_nature_multipliers[20] = [10,10,10,9,11];
+        s_nature_multipliers[21] = [11,10,10,10,9];
+        s_nature_multipliers[22] = [10,11,10,10,9];
+        s_nature_multipliers[23] = [10,10,11,10,9];
+        s_nature_multipliers[24] = [10,10,10,11,9];
+        s_nature_multipliers[25] = [10,10,10,10,10];
     }
     /**
      * Since data is saved in a struct, it is convenient to group the data of the same type together.
@@ -25,17 +52,17 @@ contract PokemonFactory is Ownable {
     struct Pokemon {
         uint256 id; // the token id    
         string nickname;
-        string img_encoded_sprite; // encoded in base64
+        string img_sprite_url; // just the img url
         string ability1_name;
         string ability2_name;
         
         uint16 pokedex_id;
-        uint16 hp;
-        uint16 attack;
-        uint16 defense;
-        uint16 attack_sp;
-        uint16 defense_sp;
-        uint16 speed;
+        uint16 base_hp;
+        uint16 base_attack;
+        uint16 base_defense;
+        uint16 base_attack_sp;
+        uint16 base_defense_sp;
+        uint16 base_speed;
 
         uint16 height;
         uint16 weight;
@@ -81,7 +108,7 @@ contract PokemonFactory is Ownable {
     function createRandomPokemon(
         uint16 _pokedex_id,
         string memory _nickname,
-        string memory _img_encoded_sprite,
+        string memory _img_sprite_url,
         string memory _ability1_name,
         string memory _ability2_name,
         uint16 _base_hp,
@@ -119,7 +146,7 @@ contract PokemonFactory is Ownable {
         // We don't modify the _base_height-weight yet
 
         // Calculate the nature
-        uint8 nature = _getNatureFromEncryptionConstant(encryption_constant); // Value from 0 to 24
+        uint8 nature = _getNatureFromEncryptionConstant(encryption_constant); // Value from 1 to 25
         // Calculate the ability
         bool hasSecondAbility = _hasSecondAbility(personality_value);
         if (!hasSecondAbility) {
@@ -136,7 +163,7 @@ contract PokemonFactory is Ownable {
         Pokemon memory newPokemon = Pokemon(
             s_pokemonCounter++, // provide token id and then increase the counter
             _nickname,
-            _img_encoded_sprite,
+            _img_sprite_url,
             _ability1_name,
             _ability2_name,
             _pokedex_id,
@@ -211,7 +238,7 @@ contract PokemonFactory is Ownable {
     }
 
     function _getNatureFromEncryptionConstant(uint32 _encryption_constant) private pure returns (uint8) {
-        return uint8(_encryption_constant % 25);
+        return uint8(_encryption_constant % 25) + 1;
     }
 
     function _hasSecondAbility(uint32 _personality_value) private pure returns (bool) {
