@@ -18,32 +18,32 @@ contract PokemonFactory is Ownable {
 
     constructor() Ownable(_msgSender()) {
         s_pokemonCounter = 0;
-
-        s_nature_multipliers[1] = [10,10,10,10,10]; // 9 for 0.9 (decreased stat), 10 for (not increased nor decreased stat), 11 for (increased stat)
-        s_nature_multipliers[2] = [9,11,10,10,10];
-        s_nature_multipliers[3] = [9,10,11,10,10];
-        s_nature_multipliers[4] = [9,10,10,11,10];
-        s_nature_multipliers[5] = [9,10,10,10,11];
-        s_nature_multipliers[6] = [11,9,10,10,10];
-        s_nature_multipliers[7] = [10,10,10,10,10];
-        s_nature_multipliers[8] = [10,9,11,10,10];
-        s_nature_multipliers[9] = [10,9,10,11,10];
-        s_nature_multipliers[10] = [10,9,10,10,11];
-        s_nature_multipliers[11] = [11,10,9,10,10];
-        s_nature_multipliers[12] = [10,11,9,10,10];
-        s_nature_multipliers[13] = [10,10,10,10,10];
-        s_nature_multipliers[14] = [10,10,9,11,10];
-        s_nature_multipliers[15] = [10,10,11,9,10];
-        s_nature_multipliers[16] = [10,10,9,10,11];
-        s_nature_multipliers[17] = [11,10,10,9,10];
-        s_nature_multipliers[18] = [10,11,10,9,10];
-        s_nature_multipliers[19] = [10,10,10,10,10];
-        s_nature_multipliers[20] = [10,10,10,9,11];
-        s_nature_multipliers[21] = [11,10,10,10,9];
-        s_nature_multipliers[22] = [10,11,10,10,9];
-        s_nature_multipliers[23] = [10,10,11,10,9];
-        s_nature_multipliers[24] = [10,10,10,11,9];
-        s_nature_multipliers[25] = [10,10,10,10,10];
+        // 9 for 0.9 (decreased stat), 10 for (not increased nor decreased stat), 11 for (increased stat)
+        s_nature_multipliers[1] = [10,10,10,10,10]; // Hardy
+        s_nature_multipliers[2] = [9,11,10,10,10]; // Bold
+        s_nature_multipliers[3] = [9,10,11,10,10]; // Modest
+        s_nature_multipliers[4] = [9,10,10,11,10]; // Calm
+        s_nature_multipliers[5] = [9,10,10,10,11]; // Timid
+        s_nature_multipliers[6] = [11,9,10,10,10]; // Lonely
+        s_nature_multipliers[7] = [10,10,10,10,10]; // Docile
+        s_nature_multipliers[8] = [10,9,11,10,10]; // Mild
+        s_nature_multipliers[9] = [10,9,10,11,10]; // Gentle
+        s_nature_multipliers[10] = [10,9,10,10,11]; // Hasty
+        s_nature_multipliers[11] = [11,10,9,10,10]; // Adamant
+        s_nature_multipliers[12] = [10,11,9,10,10]; // Impish
+        s_nature_multipliers[13] = [10,10,10,10,10]; // Bashful
+        s_nature_multipliers[14] = [10,10,9,11,10]; // Careful
+        s_nature_multipliers[15] = [10,10,11,9,10]; // Rash
+        s_nature_multipliers[16] = [10,10,9,10,11]; // Jolly
+        s_nature_multipliers[17] = [11,10,10,9,10]; // Naughty
+        s_nature_multipliers[18] = [10,11,10,9,10]; // Lax
+        s_nature_multipliers[19] = [10,10,10,10,10]; // Quirky
+        s_nature_multipliers[20] = [10,10,10,9,11]; // Naive
+        s_nature_multipliers[21] = [11,10,10,10,9]; // Brave
+        s_nature_multipliers[22] = [10,11,10,10,9]; // Relaxed
+        s_nature_multipliers[23] = [10,10,11,10,9]; // Quiet
+        s_nature_multipliers[24] = [10,10,10,11,9]; // Sassy
+        s_nature_multipliers[25] = [10,10,10,10,10]; // Serious
     }
     /**
      * Since data is saved in a struct, it is convenient to group the data of the same type together.
