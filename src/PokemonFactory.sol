@@ -50,7 +50,8 @@ contract PokemonFactory is Ownable {
      * This way, the blockchain may store the data more efficiently. Less storage slots may be used.
      */
     struct Pokemon {
-        uint256 id; // the token id    
+        uint256 id; // the token id
+        string name; // original name of the pokemon
         string nickname;
         string img_sprite_url; // just the img url
         string ability1_name;
@@ -107,6 +108,7 @@ contract PokemonFactory is Ownable {
 
     function createRandomPokemon(
         uint16 _pokedex_id,
+        string memory _name,
         string memory _nickname,
         string memory _img_sprite_url,
         string memory _ability1_name,
@@ -162,6 +164,7 @@ contract PokemonFactory is Ownable {
 
         Pokemon memory newPokemon = Pokemon(
             s_pokemonCounter++, // provide token id and then increase the counter
+            _name,
             _nickname,
             _img_sprite_url,
             _ability1_name,
